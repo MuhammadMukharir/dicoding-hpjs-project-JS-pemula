@@ -1,7 +1,7 @@
 {
   "name": "open-music-api",
   "version": "1.0.0",
-  "description": "dicoding-project-pemula",
+  "description": "dicoding-project-pemula-javascript",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
