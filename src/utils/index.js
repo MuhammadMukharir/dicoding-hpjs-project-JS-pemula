@@ -1,4 +1,4 @@
-const mapSongDBToSongModel = ({ 
+const mapSongDBToSongModel = ({
   id,
   title,
   year,
@@ -17,5 +17,5 @@ const mapSongDBToSongModel = ({
   insertedAt: created_at,
   updatedAt: updated_at,
 });
- 
+
 module.exports = { mapSongDBToSongModel };
