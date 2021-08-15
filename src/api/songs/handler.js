@@ -1,18 +1,9 @@
-// const ClientError = require('../../exceptions/ClientError');
-
-const Joi = require('joi');
+const { ErrorHandler } = require('../../exceptions/ErrorHandler');
 
 class SongsHandler {
-  constructor(service) {
+  constructor(service, validator) {
     this._service = service;
-
-    this._SongPayloadSchema = Joi.object({
-      title: Joi.string().required(),
-      year: Joi.number().required(),
-      performer: Joi.string().required(),
-      genre: Joi.string().required(),
-      duration: Joi.number().required(),
-    });
+    this._validator = validator;
 
     this.postSongHandler = this.postSongHandler.bind(this);
     this.getSongsHandler = this.getSongsHandler.bind(this);
@@ -24,15 +15,7 @@ class SongsHandler {
   // Creating a new song
   async postSongHandler(request, h) {
     try {
-      const h_resp = { status: 'fail', message: '' };
-      const validationResult = this._SongPayloadSchema.validate(request.payload);
-
-      // if validation error
-      if (validationResult.error) {
-        // console.log(`Validation error: ${validationResult.error.message}`);
-        h_resp.message = validationResult.error.message;
-        return h.response(h_resp).code(400);
-      }
+      this._validator.validateSongPayload(request.payload);
 
       const {
         title, year, performer, genre, duration,
@@ -42,26 +25,17 @@ class SongsHandler {
         title, year, performer, genre, duration,
       });
 
-      h_resp.status = 'success';
-      h_resp.message = 'Lagu berhasil ditambahkan';
-      h_resp.data = { songId };
-
-      return h.response(h_resp).code(201);
+      const response = h.response({
+        status: 'success',
+        message: 'Lagu berhasil ditambahkan',
+        data: {
+          songId,
+        },
+      });
+      response.code(201);
+      return response;
     } catch (error) {
-      const h_resp = { status: '', message: '' };
-
-      if (error.message === 'Lagu gagal ditambahkan') {
-        h_resp.status = 'fail';
-        h_resp.message = error.message;
-        return h.response(h_resp).code(400);
-      }
-
-      // Server ERROR!
-      console.error(error);
-      h_resp.status = 'error';
-      h_resp.message = 'Maaf, terjadi kegagalan pada server kami.';
-
-      return h.response(h_resp).code(500);
+      return ErrorHandler(error, h);
     }
   }
 
@@ -69,14 +43,14 @@ class SongsHandler {
   async getSongsHandler(request, h) {
     try {
       const songs = await this._service.getSongs();
-      const h_resp = { status: 'success', data: { songs } };
-      return h.response(h_resp).code(200);
+      return {
+        status: 'success',
+        data: {
+          songs,
+        },
+      };
     } catch (error) {
-      // Server ERROR!
-      console.error(error);
-      const h_resp = { status: 'error', message: 'Maaf, terjadi kegagalan pada server kami.' };
-
-      return h.response(h_resp).code(500);
+      return ErrorHandler(error, h);
     }
   }
 
@@ -85,62 +59,31 @@ class SongsHandler {
     try {
       const { songId } = request.params;
       const song = await this._service.getSongById(songId);
-      const h_resp = { status: 'success', data: { song } };
-      return h.response(h_resp).code(200);
+      return {
+        status: 'success',
+        data: {
+          song,
+        },
+      };
     } catch (error) {
-      const h_resp = { status: '', message: '' };
-
-      if (error.message === 'Lagu tidak ditemukan') {
-        h_resp.status = 'fail';
-        h_resp.message = error.message;
-        return h.response(h_resp).code(404);
-      }
-
-      // Server ERROR!
-      console.error(error);
-      h_resp.status = 'error';
-      h_resp.message = 'Maaf, terjadi kegagalan pada server kami.';
-
-      return h.response(h_resp).code(500);
+      return ErrorHandler(error, h);
     }
   }
 
   // Updating an existing song
   async putSongByIdHandler(request, h) {
     try {
-      const h_resp = { status: 'fail', message: '' };
-      const validationResult = this._SongPayloadSchema.validate(request.payload);
-
-      // if validation error
-      if (validationResult.error) {
-        // console.log(`Validation error: ${validationResult.error.message}`);
-        h_resp.message = validationResult.error.message;
-        return h.response(h_resp).code(400);
-      }
-
+      this._validator.validateSongPayload(request.payload);
       const { songId } = request.params;
 
       await this._service.editSongById(songId, request.payload);
 
-      h_resp.status = 'success';
-      h_resp.message = 'Lagu berhasil diperbarui';
-
-      return h.response(h_resp).code(200);
+      return {
+        status: 'success',
+        message: 'Lagu berhasil diperbarui',
+      };
     } catch (error) {
-      const h_resp = { status: '', message: '' };
-
-      if (error.message === 'Gagal memperbarui lagu. Id tidak ditemukan') {
-        h_resp.status = 'fail';
-        h_resp.message = error.message;
-        return h.response(h_resp).code(404);
-      }
-
-      // Server ERROR!
-      console.error(error);
-      h_resp.status = 'error';
-      h_resp.message = 'Maaf, terjadi kegagalan pada server kami.';
-
-      return h.response(h_resp).code(500);
+      return ErrorHandler(error, h);
     }
   }
 
@@ -149,23 +92,12 @@ class SongsHandler {
     try {
       const { songId } = request.params;
       await this._service.deleteSongById(songId);
-      const h_resp = { status: 'success', message: 'Lagu berhasil dihapus' };
-      return h.response(h_resp).code(200);
+      return {
+        status: 'success',
+        message: 'Lagu berhasil dihapus',
+      };
     } catch (error) {
-      const h_resp = { status: '', message: '' };
-
-      if (error.message === 'Lagu gagal dihapus. Id tidak ditemukan') {
-        h_resp.status = 'fail';
-        h_resp.message = error.message;
-        return h.response(h_resp).code(404);
-      }
-
-      // Server ERROR!
-      console.error(error);
-      h_resp.status = 'error';
-      h_resp.message = 'Maaf, terjadi kegagalan pada server kami.';
-
-      return h.response(h_resp).code(500);
+      return ErrorHandler(error, h);
     }
   }
 }

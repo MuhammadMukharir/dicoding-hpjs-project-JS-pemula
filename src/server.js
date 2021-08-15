@@ -1,11 +1,13 @@
-// mengimpor dotenv dan menjalankan konfigurasinya
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
-const songs = require('./api/songs');
 
+const songs = require('./api/songs');
 const SongsService = require('./services/postgres/SongsService');
-// const NotesValidator = require('./validator/notes');
+const SongsValidator = require('./validator/songs');
+
+const ClientError = require('./exceptions/ClientError');
+const ServerError = require('./exceptions/ServerError');
 
 const init = async () => {
   const songsService = new SongsService();
@@ -24,6 +26,7 @@ const init = async () => {
     plugin: songs,
     options: {
       service: songsService,
+      validator: SongsValidator,
     },
   });
 
