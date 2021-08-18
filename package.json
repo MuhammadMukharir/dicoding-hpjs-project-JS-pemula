@@ -1,6 +1,6 @@
 {
   "name": "open-music-api",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "dicoding-project-pemula-javascript-api-hapijs-posgresql-joi",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,9 @@
   "license": "ISC",
   "dependencies": {
     "@hapi/hapi": "^20.1.5",
+    "@hapi/jwt": "^2.0.1",
+    "auto-bind": "^4.0.0",
+    "bcrypt": "^5.0.1",
     "dotenv": "^10.0.0",
     "joi": "^17.4.2",
     "nanoid": "^3.1.24",
