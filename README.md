@@ -1,4 +1,4 @@
-# dicoding-hpjs-project-JS-pemula
+# Belajar Fundamental Aplikasi Back-End
 Dicoding project 'Belajar Fundamental Aplikasi Back-End'
 <br>
 <br>
