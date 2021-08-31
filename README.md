@@ -1,4 +1,4 @@
-# Belajar Fundamental Aplikasi Back-End
+# Belajar Fundamental Aplikasi Back-End - NodeJS
 Dicoding project 'Belajar Fundamental Aplikasi Back-End'
 <br>
 <br>
@@ -8,3 +8,4 @@ Menerapkan : <br>
 3. Message-Broker menggunakan RabbitMQ untuk eksport playlist ke email <br>
 4. Menggunakan package Inert untuk serve file statis jpg <br>
 5. Cache menggunakan Redis, <br>
+6. Menggunakan NodeJS dengan framework HapiJS
