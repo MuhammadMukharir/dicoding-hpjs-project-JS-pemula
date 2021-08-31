@@ -8,14 +8,14 @@ class PlaylistsHandler {
     autoBind(this);
   }
 
-  // k5: fitur menambahkan playlist 
+  // k5: fitur menambahkan playlist
   async postPlaylistHandler(request, h) {
     this._validator.validatePostPlaylistPayload(request.payload);
 
     const { name } = request.payload;
     const { id: owner } = request.auth.credentials;
 
-    const playlistId = await this._service.addPlaylist({ name, owner});
+    const playlistId = await this._service.addPlaylist({ name, owner });
 
     const response = h.response({
       status: 'success',
@@ -27,7 +27,7 @@ class PlaylistsHandler {
     response.code(201);
     return response;
   }
-  
+
   // k6: fitur melihat daftar playlist yang dimiliki
   async getPlaylistsHandler(request, h) {
     const { id: credentialId } = request.auth.credentials;
@@ -56,13 +56,13 @@ class PlaylistsHandler {
 
   // k8: fitur menambahkan lagu ke playlist
   async postSongToPlaylistHandler(request, h) {
-    await this._validator.validatePostSongToPlaylistPayload(request.payload)
-    
+    await this._validator.validatePostSongToPlaylistPayload(request.payload);
+
     const { playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;
-    
+
     await this._service.verifyPlaylistAccess(playlistId, credentialId);
-    
+
     const { songId } = request.payload;
 
     await this._service.addSongToPlaylist(playlistId, songId);

@@ -1,7 +1,7 @@
-const { 
+const {
   PostPlaylistPayloadSchema,
   PostSongToPlaylistPayloadSchema,
-  DeleteSongToPlaylistPayloadSchema
+  DeleteSongToPlaylistPayloadSchema,
 } = require('./schema');
 const InvariantError = require('../../exceptions/InvariantError');
 

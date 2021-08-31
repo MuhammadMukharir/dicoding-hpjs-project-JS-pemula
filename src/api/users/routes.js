@@ -1,7 +1,7 @@
 const routes = (handler) => [
   {
     method: 'POST',
-    path: '/users',                           // k1: fitur registrasi pengguna
+    path: '/users', // k1: fitur registrasi pengguna
     handler: handler.postUserHandler,
   },
   {
@@ -10,5 +10,5 @@ const routes = (handler) => [
     handler: handler.getUserByIdHandler,
   },
 ];
- 
+
 module.exports = routes;

@@ -1,5 +1,5 @@
 const autoBind = require('auto-bind');
- 
+
 class AuthenticationsHandler {
   constructor(authenticationsService, usersService, tokenManager, validator) {
     this._authenticationsService = authenticationsService;
@@ -9,7 +9,7 @@ class AuthenticationsHandler {
 
     autoBind(this);
   }
- 
+
   async postAuthenticationHandler(request, h) {
     this._validator.validatePostAuthenticationPayload(request.payload);
 

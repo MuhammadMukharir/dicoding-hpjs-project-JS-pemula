@@ -1,15 +1,14 @@
-const ClientError = require('../../exceptions/ClientError');
- 
+const autoBind = require('auto-bind');
+
 class CollaborationsHandler {
   constructor(collaborationsService, playlistsService, validator) {
     this._collaborationsService = collaborationsService;
     this._playlistsService = playlistsService;
     this._validator = validator;
- 
-    this.postCollaborationHandler = this.postCollaborationHandler.bind(this);
-    this.deleteCollaborationHandler = this.deleteCollaborationHandler.bind(this);
+
+    autoBind(this);
   }
- 
+
   async postCollaborationHandler(request, h) {
     this._validator.validateCollaborationPayload(request.payload);
     const { id: credentialId } = request.auth.credentials;
@@ -28,7 +27,7 @@ class CollaborationsHandler {
     response.code(201);
     return response;
   }
- 
+
   async deleteCollaborationHandler(request, h) {
     this._validator.validateCollaborationPayload(request.payload);
     const { id: credentialId } = request.auth.credentials;
@@ -43,5 +42,5 @@ class CollaborationsHandler {
     };
   }
 }
- 
+
 module.exports = CollaborationsHandler;

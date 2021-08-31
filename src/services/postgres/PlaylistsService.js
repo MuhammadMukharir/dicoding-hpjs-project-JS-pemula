@@ -4,11 +4,11 @@ const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
 
-
 class PlaylistsService {
-  constructor(collaborationService) {
+  constructor(collaborationService, cacheService) {
     this._pool = new Pool();
     this._collaborationService = collaborationService;
+    this._cacheService = cacheService;
   }
 
   // k5: create new playlist
@@ -54,13 +54,13 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Playlist gagal dihapus. Id tidak ditemukan');
     }
   }
 
   // k8: add song to playlist
-  async addSongToPlaylist(playlistId, songId){
+  async addSongToPlaylist(playlistId, songId) {
     const id = `playlistsong-${nanoid(16)}`;
 
     const query = {
@@ -74,18 +74,31 @@ class PlaylistsService {
       throw new InvariantError('Playlist gagal ditambahkan');
     }
 
+    // delete playlist-cache in redis
+    await this._cacheService.delete(`playlist:${playlistId}`);
+
     return result.rows[0].id;
   }
 
   // k9: songs in playlist
   async getSongsFromPlaylistById(id) {
-    const query = {
-      text: 'SELECT songs.id, title, performer FROM songs INNER JOIN playlistsongs ON playlistsongs.song_id=songs.id WHERE playlistsongs.playlist_id = $1',
-      values: [id],
-    };
-    const result = await this._pool.query(query);
+    try {
+      // mendapatkan catatan dari cache
+      const result = await this._cacheService.get(`playlist:${id}`);
+      return JSON.parse(result);
+    } catch (error) {
+      // bila gagal, diteruskan dengan mendapatkan catatan dari database
+      const query = {
+        text: 'SELECT songs.id, title, performer FROM songs INNER JOIN playlistsongs ON playlistsongs.song_id=songs.id WHERE playlistsongs.playlist_id = $1',
+        values: [id],
+      };
+      const result = await this._pool.query(query);
 
-    return result.rows;
+      // informasi playlist akan disimpan pada cache sebelum fungsi getSongsFromPlaylistById dikembalikan
+      await this._cacheService.set(`playlist:${id}`, JSON.stringify(result));
+
+      return result.rows;
+    }
   }
 
   // k10: delete song from playlist
@@ -97,9 +110,12 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Playlist gagal dihapus. Id tidak ditemukan');
     }
+
+    // delete playlist-cache in redis
+    await this._cacheService.delete(`playlist:${playlistId}`);
   }
 
   async verifyPlaylistOwner(id, owner) {
@@ -110,7 +126,7 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Playlist tidak ditemukan');
     }
 
@@ -121,7 +137,7 @@ class PlaylistsService {
     }
   }
 
-  async verifyPlaylistAccess (playlistId, userId) {
+  async verifyPlaylistAccess(playlistId, userId) {
     try {
       await this.verifyPlaylistOwner(playlistId, userId);
     } catch (error) {
